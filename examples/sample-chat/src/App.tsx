@@ -1,6 +1,5 @@
 import React from 'react';
-import SampleChat from './OfficialDemo/SampleChat'
-// import SampleChat from './components/SampleChat'
+import SampleChat from './demo/SampleChat';
 function App() {
   return (
     <div className="App">

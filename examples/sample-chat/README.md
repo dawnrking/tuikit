@@ -1,46 +1,96 @@
-# Getting Started with Create React App
+# [Chat UIKit React](https://www.tencentcloud.com/document/product/1047/34279/)
+>Chat UIKit 是基于腾讯云 IM SDK 的一款 UI 组件库，它提供了一些通用的 UI 组件，包含会话、聊天、关系链、群组、音视频通话等功能。
+基于 UI 组件您可以像搭积木一样快速搭建起自己的业务逻辑。
+Chat UIKit  中的组件在实现 UI 功能的同时，会调用 IM SDK 相应的接口实现 IM 相关逻辑和数据的处理，因而开发者在使用 Chat UIKit  时只需关注自身业务或个性化扩展即可。
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<img align="right" src="https://qcloudimg.tencent-cloud.cn/raw/4562be8179a1534efb17d33428239c82.png?auto=format,enhance" width="50%" />
 
-## Available Scripts
+### Quick Links
+- [Demo App](https://web.sdk.qcloud.com/im/demo/intl/index.html)
+- [Client API](https://www.tencentcloud.com/document/product/1047/33999)
+- [Free Demos](https://www.tencentcloud.com/document/product/1047/34279)
+- [FAQ](https://www.tencentcloud.com/document/product/1047/34455)
+- [GitHub Source](https://github.com/TencentCloud/chat-uikit-react)
+- [Generating UserSig](https://www.tencentcloud.com/document/product/1047/34385)
+## Example App
+我们已经构建了用于展示聊天功能的实例演示程序，您可以在我们的网站上预览这些 [demo](https://web.sdk.qcloud.com/im/demo/intl/index.html)，另外在 GitHub 中也提供相关的[开源代码](https://github.com/TencentCloud/chat-uikit-react)。
 
-In the project directory, you can run:
+![img.png](https://web.sdk.qcloud.com/im/demo/TUIkit/react-static/images/home.png)
 
-### `npm start`
+## 跑通demo
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 步骤一：下载源码
+```
+# Run the code in CLI
+$ git clone https://github.com/TencentCloud/chat-uikit-react
+# Go to the project  
+$ cd chat-uikit-react
+# Install dependencies of the demo
+$ npm install && cd examples/sample-chat && npm install
+```
+### 步骤二：配置 demo
+1. 打开`examples/sample-chat`项目，通过路径`./examples/sample-chat/src/debug/GenerateTestUserSig.js`找到`GenerateTestUserSig.js`文件。
+2. 在`GenerateTestUserSig.js`文件中设置 `SDKAPPID` 和 `SECRETKEY` ，其值可以在[IM控制台](https://console.tencentcloud.com/im)中获取。 点击目标应用卡片，进入其配置页面。
+   ![](https://qcloudimg.tencent-cloud.cn/raw/8d469e975f1ca5a2f3dbc9c6fe8774f5.png)
+3. 在 **Basic Information** 区域，点击  **Display key**，将密钥信息复制并保存到 GenerateTestUserSig 文件中。
+>!
+>- 本文提到的生成 UserSig 的方案是在客户端代码中配置 SECRETKEY，该方法中 SECRETKEY 很容易被反编译逆向破解，一旦您的密钥泄露，攻击者就可以盗用您的腾讯云流量，因此**该方法仅适合本地跑通 Demo 和功能调试。**
+>- 正确的 UserSig 签发方式是将 UserSig 的计算代码集成到您的服务端，并提供面向 App 的接口，在需要 UserSig 时由您的 App 向业务服务器发起请求获取动态 UserSig。更多详情请参见 [服务端生成 UserSig](https://www.tencentcloud.com/document/product/1047/34385)。
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 步骤三：启动项目
+```
+# Launch the project
+$ npm run start
+```
 
-### `npm test`
+### 步骤四：发送您的第一条消息
+1. 项目启动成功后，点击“+”图标，进行创建会话。
+2. 在输入框中搜索另一个用户的 userID。
+3. 点击用户头像发起会话。
+4. 在输入框输入消息，按下"enter"键发送。
+   ![](https://web.sdk.qcloud.com/im/demo/TUIkit/react-static/images/chat.gif)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 集成 chat-uikit-react
 
-### `npm run build`
+### 步骤一：Installation
+```
+$ npm install @tencentcloud/chat-uikit-react
+```
+### 步骤二：Usage
+```tsx
+import React, { useEffect, useState } from 'react';
+import { TUIKit } from '@tencentcloud/chat-uikit-react';
+import '@tencentcloud/chat-uikit-react/dist/cjs/index.css';
+import TIM from 'tim-js-sdk';
+import TIMUploadPlugin from 'tim-upload-plugin';
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+// 生成tim实例对象并完成登陆
+const init = async () => {
+   return new Promise((resolve, reject) => {
+      const tim = TIM.create({ SDKAppID: 000 });
+      tim?.registerPlugin({ 'tim-upload-plugin': TIMUploadPlugin });
+      const onReady = () => { resolve(tim); };
+      tim.on(TIM.EVENT.SDK_READY, onReady);
+      tim.login({
+         userID: 'xxx',
+         userSig: 'xxx',
+      });
+   });
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+export function SampleChat() {
+   const [tim, setTim] = useState<TIM>();
+   useEffect(() => {
+      (async ()=>{
+         const tim = await init()
+         setTim(tim)
+      })()
+   }, [])
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+   return (
+           <div style={{height: '100vh',width: '100vw'}}>
+              <TUIKit tim={tim}></TUIKit>
+           </div>
+   );
+}
+```
